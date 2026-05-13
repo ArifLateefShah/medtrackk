@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack – Medical Supply Chain</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS  (EasyHealth CDP system)
+───────────────────────────────────────────────────────────── */
+:root {
+  --bg0: #ffffff;
+  --bg1: #f8fbff;
+  --bg2: #f4f9ff;
+  --bg-info:    #E6F1FB;
+  --bg-success: #EAF3DE;
+  --bg-warning: #FAEEDA;
+  --bg-danger:  #FCEBEB;
+  --tx0: #1a1a1a;
+  --tx1: #555555;
+  --tx2: #888888;
+  --tx-info:    #003459;
+  --tx-success: #27500A;
+  --tx-warning: #633806;
+  --tx-danger:  #791F1F;
+  --bd:  rgba(0,0,0,0.10);
+  --bd2: rgba(0,0,0,0.20);
+  --blue:  #2857ce;
+  --blue2: #003459;
+  --green: #3B6D11;
+  --amber: #854F0B;
+  --red:   #A32D2D;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body { font-family:var(--font); background:var(--bg2); color:var(--tx0); font-size:13px; line-height:1.5; }
+
+/* ─────────────────────────────────────────────────────────────
+   ROLE-SELECT / LOGIN PAGE
+───────────────────────────────────────────────────────────── */
+#loginPage {
+  min-height:100vh;
+  background: linear-gradient(135deg, #f0f6ff 0%, #e8f2fb 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 16px;
+}
+.login-logo { text-align:center; margin-bottom:36px; }
+.login-logo h1 { font-size:30px; font-weight:800; color:var(--blue2); letter-spacing:-0.03em; }
+.login-logo h1 span { color:var(--blue); }
+.login-logo p { font-size:13px; color:var(--tx2); margin-top:6px; }
+
+.role-grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+  width:100%;
+  max-width:820px;
+}
+@media(max-width:600px){ .role-grid{grid-template-columns:1fr;} }
+
+.role-card {
+  background:var(--bg0);
+  border:1px solid var(--bd);
+  border-radius:var(--r-xl);
+  padding:24px 22px;
+  cursor:pointer;
+  transition:all .18s;
+  box-shadow:var(--shadow-sm);
+  display:flex; gap:16px; align-items:flex-start;
+  position:relative; overflow:hidden;
+}
+.role-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+}
+.role-card.gov::before  { background:var(--blue); }
+.role-card.mfr::before  { background:var(--green); }
+.role-card.ph::before   { background:var(--amber); }
+.role-card.pub::before  { background:var(--tx2); }
+.role-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--blue); }
+.role-card-icon {
+  width:48px; height:48px; border-radius:var(--r-md);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+}
+.role-card h3 { font-size:15px; font-weight:700; margin-bottom:4px; }
+.role-card p  { font-size:12px; color:var(--tx1); line-height:1.55; }
+.role-card .tag-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:10px; }
+.tag {
+  font-size:10px; font-weight:600;
+  padding:2px 8px; border-radius:10px;
+  display:inline-block;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   APP SHELL
+───────────────────────────────────────────────────────────── */
+#appShell { display:none; height:100vh; flex-direction:column; overflow:hidden; }
+
+/* TOPBAR */
+.topbar {
+  background:var(--bg0);
+  border-bottom:0.5px solid var(--bd);
+  height:52px; flex-shrink:0;
+  display:flex; align-items:center;
+  padding:0 24px; gap:16px;
+  box-shadow:var(--shadow-sm);
+  z-index:20;
+}
+.topbar-brand { font-size:18px; font-weight:800; color:var(--blue2); letter-spacing:-0.02em; flex-shrink:0; }
+.topbar-brand span { color:var(--blue); }
+
+/* horizontal nav tabs */
+.topbar-nav {
+  display:flex; align-items:center; gap:2px;
+  flex:1; overflow-x:auto;
+  scrollbar-width:none;
+}
+.topbar-nav::-webkit-scrollbar { display:none; }
+.tnav-item {
+  display:flex; align-items:center; gap:6px;
+  padding:6px 14px;
+  font-size:13px; font-weight:500;
+  color:var(--tx1);
+  border-radius:var(--r-md);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .15s;
+  border:none; background:none; font-family:var(--font);
+  position:relative;
+}
+.tnav-item:hover { background:var(--bg1); color:var(--tx0); }
+.tnav-item.active {
+  background:var(--bg-info);
+  color:var(--blue2);
+  font-weight:600;
+}
+.tnav-item.active::after {
+  content:'';
+  position:absolute; bottom:-14px; left:50%; transform:translateX(-50%);
+  width:28px; height:3px;
+  background:var(--blue);
+  border-radius:2px 2px 0 0;
+}
+.tnav-icon { font-size:14px; }
+
+.topbar-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 12px 4px 5px;
+  border:0.5px solid var(--bd);
+  border-radius:24px;
+  background:var(--bg1);
+  cursor:pointer;
+  transition:all .15s;
+}
+.user-chip:hover { background:var(--bg2); box-shadow:var(--shadow-sm); }
+.uc-avatar {
+  width:26px; height:26px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700;
+}
+.uc-info { line-height:1.3; }
+.uc-name { font-size:11px; font-weight:600; color:var(--tx0); }
+.uc-role { font-size:10px; font-weight:600; }
+.uc-caret { font-size:9px; color:var(--tx2); }
+
+/* CONTENT AREA */
+.app-body { display:flex; flex:1; overflow:hidden; }
+.content {
+  flex:1; overflow-y:auto;
+  padding:24px;
+  background:var(--bg2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE / VIEW SWITCHING
+───────────────────────────────────────────────────────────── */
+.view { display:none; animation:fadeUp .22s ease; }
+.view.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY + SECTION HEADERS
+───────────────────────────────────────────────────────────── */
+.page-title { font-size:20px; font-weight:700; color:var(--tx0); margin-bottom:4px; }
+.page-sub   { font-size:13px; color:var(--tx1); margin-bottom:20px; }
+
+/* ─────────────────────────────────────────────────────────────
+   KPI METRICS ROW
+───────────────────────────────────────────────────────────── */
+.kpi-row {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:14px;
+  margin-bottom:24px;
+}
+.kpi {
+  background:var(--bg0);
+  border:0.5px solid var(--bd);
+  border-radius:var(--r-lg);
+  padding:18px 20px;
+  box-shadow:var(--shadow-sm);
+  position:relative; overflow:hidden;
+}
+.kpi::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+}
+.kpi.k-blue::before  { background:var(--blue); }
+.kpi.k-green::before { background:var(--green); }
+.kpi.k-amber::before { background:var(--amber); }
+.kpi.k-red::before   { background:var(--red); }
+.kpi-icon  { font-size:20px; margin-bottom:8px; }
+.kpi-label { font-size:11px; font-weight:600; color:var(--tx2); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+.kpi-value { font-size:28px; font-weight:700; line-height:1; }
+.kpi.k-blue  .kpi-value { color:var(--blue); }
+.kpi.k-green .kpi-value { color:var(--green); }
+.kpi.k-amber .kpi-value { color:var(--amber); }
+.kpi.k-red   .kpi-value { color:var(--red); }
+.kpi-sub { font-size:11px; color:var(--tx2); margin-top:4px; }
+
+/* ─────────────────────────────────────────────────────────────
+   CARD
+───────────────────────────────────────────────────────────── */
+.card {
+  background:var(--bg0);
+  border:0.5px solid var(--bd);
+  border-radius:var(--r-lg);
+  margin-bottom:20px;
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .18s;
+}
+.card:hover { box-shadow:var(--shadow-md); }
+.card-head {
+  padding:13px 20px;
+  border-bottom:0.5px solid var(--bd);
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--bg1);
+}
+.card-head h2 { font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.card-head-actions { display:flex; gap:8px; align-items:center; }
+.card-body { padding:20px; }
+
+/* ─────────────────────────────────────────────────────────────
+   TABLE
+───────────────────────────────────────────────────────────── */
+.table { width:100%; border-collapse:collapse; font-size:13px; }
+.table th {
+  padding:10px 14px;
+  text-align:left;
+  font-size:11px; font-weight:700;
+  color:var(--tx2);
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid var(--bd);
+  background:var(--bg1);
+  white-space:nowrap;
+}
+.table td {
+  padding:12px 14px;
+  border-bottom:0.5px solid var(--bd);
+  color:var(--tx0);
+  vertical-align:middle;
+}
+.table tr:last-child td { border-bottom:none; }
+.table tr:hover td { background:var(--bg1); }
+.table .actions { display:flex; gap:6px; }
+
+/* empty row */
+.table-empty td { text-align:center; padding:32px; color:var(--tx2); font-style:italic; }
+
+/* ─────────────────────────────────────────────────────────────
+   STATUS PILLS
+───────────────────────────────────────────────────────────── */
+.pill {
+  display:inline-block; padding:3px 9px;
+  border-radius:12px; font-size:11px; font-weight:600;
+}
+.p-active, .p-valid, .p-available { background:var(--bg-success); color:var(--tx-success); }
+.p-pending, .p-expiring           { background:var(--bg-warning);  color:var(--tx-warning); }
+.p-revoked, .p-expired, .p-error  { background:var(--bg-danger);   color:var(--tx-danger);  }
+.p-info, .p-transferred           { background:var(--bg-info);     color:var(--tx-info);    }
+.p-dispensed                      { background:var(--bg-info);     color:var(--tx-info);    }
+.p-draft, .p-stock                { background:#f0efea; color:#555; }
+
+/* ─────────────────────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────────────────────── */
+.btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:7px 14px; font-size:12px; font-weight:600;
+  border-radius:var(--r-md); cursor:pointer;
+  font-family:var(--font);
+  border:0.5px solid var(--bd2);
+  background:var(--bg0); color:var(--tx0);
+  transition:all .15s; white-space:nowrap;
+}
+.btn:hover { background:var(--bg1); box-shadow:var(--shadow-sm); }
+.btn:active { transform:scale(.98); }
+.btn-primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+.btn-primary:hover { background:var(--blue2); }
+.btn-success { background:var(--green); color:#fff; border-color:var(--green); }
+.btn-success:hover { background:#27500A; }
+.btn-danger { background:transparent; border-color:var(--red); color:var(--red); }
+.btn-danger:hover { background:var(--bg-danger); }
+.btn-warning { background:transparent; border-color:var(--amber); color:var(--amber); }
+.btn-warning:hover { background:var(--bg-warning); }
+.btn-sm { padding:5px 10px; font-size:11px; }
+.btn[disabled] { opacity:.45; cursor:not-allowed; pointer-events:none; }
+
+/* ─────────────────────────────────────────────────────────────
+   FORMS
+───────────────────────────────────────────────────────────── */
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--tx1); margin-bottom:5px; }
+.form-req   { color:var(--red); }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:9px 11px;
+  font-size:13px; font-family:var(--font);
+  border:1px solid rgba(0,0,0,.22);
+  border-radius:var(--r-md);
+  background:var(--bg0); color:var(--tx0);
+  transition:border-color .15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline:none; border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(40,87,206,.09);
+}
+.form-input[readonly] { background:var(--bg1); color:var(--tx1); }
+.form-hint { font-size:11px; color:var(--tx2); margin-top:4px; }
+.form-row  { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+/* ─────────────────────────────────────────────────────────────
+   ALERTS
+───────────────────────────────────────────────────────────── */
+.alert {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:11px 14px; border-radius:var(--r-md);
+  font-size:13px; margin-bottom:14px;
+}
+.alert-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+.a-success { background:var(--bg-success); color:var(--tx-success); border:0.5px solid #b7d98a; }
+.a-danger  { background:var(--bg-danger);  color:var(--tx-danger);  border:0.5px solid #f5b8b8; }
+.a-warning { background:var(--bg-warning); color:var(--tx-warning); border:0.5px solid #f0cf9a; }
+.a-info    { background:var(--bg-info);    color:var(--tx-info);    border:0.5px solid #a8c8ef; }
+
+/* ─────────────────────────────────────────────────────────────
+   TOOLBAR (filter / search bar above tables)
+───────────────────────────────────────────────────────────── */
+.toolbar {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:14px; flex-wrap:wrap;
+}
+.toolbar-spacer { flex:1; }
+.search-box {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 12px;
+  border:0.5px solid rgba(0,0,0,.2);
+  border-radius:var(--r-md);
+  background:var(--bg0); font-size:13px; color:var(--tx0);
+  min-width:200px;
+}
+.search-box input {
+  border:none; outline:none; background:transparent;
+  font-size:13px; font-family:var(--font); color:var(--tx0); width:100%;
+}
+.filter-select {
+  padding:6px 10px;
+  font-size:12px; font-family:var(--font);
+  border:0.5px solid rgba(0,0,0,.2);
+  border-radius:var(--r-md);
+  background:var(--bg0); color:var(--tx0);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RECENT ACTIVITY TIMELINE
+───────────────────────────────────────────────────────────── */
+.tl { padding:4px 0; }
+.tl-item { display:flex; gap:14px; margin-bottom:14px; }
+.tl-dot-col { display:flex; flex-direction:column; align-items:center; }
+.tl-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.tl-line { flex:1; width:2px; background:var(--bd); margin:5px auto 0; }
+.tl-body { flex:1; padding-bottom:2px; }
+.tl-title { font-size:13px; font-weight:500; color:var(--tx0); }
+.tl-time  { font-size:11px; color:var(--tx2); margin-top:2px; }
+
+/* ─────────────────────────────────────────────────────────────
+   VERIFICATION PAGE
+───────────────────────────────────────────────────────────── */
+.verify-hero {
+  max-width:680px; margin:0 auto 24px;
+  text-align:center; padding:40px 24px 32px;
+}
+.verify-hero h2 { font-size:22px; font-weight:700; margin-bottom:8px; }
+.verify-hero p  { font-size:14px; color:var(--tx1); margin-bottom:24px; }
+.verify-input-row {
+  display:flex; gap:10px; max-width:580px; margin:0 auto;
+}
+.verify-input-row input {
+  flex:1; padding:11px 14px; font-size:14px; font-family:var(--font);
+  border:1.5px solid rgba(0,0,0,.22); border-radius:var(--r-md);
+  background:var(--bg0); color:var(--tx0);
+  transition:border-color .15s;
+}
+.verify-input-row input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(40,87,206,.09); }
+.verify-hint { font-size:11px; color:var(--tx2); margin-top:8px; }
+
+.verify-result { max-width:640px; margin:0 auto; }
+.info-row {
+  display:flex; padding:10px 0;
+  border-bottom:0.5px solid var(--bd); font-size:13px;
+}
+.info-row:last-child { border-bottom:none; }
+.info-label { font-weight:600; color:var(--tx1); width:180px; flex-shrink:0; }
+.info-value { color:var(--tx0); }
+
+/* chain steps */
+.chain { margin-top:4px; }
+.chain-item {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:10px 0; border-bottom:0.5px solid var(--bd);
+  font-size:13px;
+}
+.chain-item:last-child { border-bottom:none; }
+.chain-num {
+  width:22px; height:22px;
+  border-radius:50%; background:var(--bg-info); color:var(--tx-info);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px;
+}
+.chain-detail { flex:1; }
+.chain-route  { font-weight:600; color:var(--tx0); }
+.chain-date   { font-size:11px; color:var(--tx2); margin-top:2px; }
+
+/* ─────────────────────────────────────────────────────────────
+   UUID DISPLAY
+───────────────────────────────────────────────────────────── */
+code {
+  font-family:'SF Mono','Fira Mono','Courier New',monospace;
+  font-size:11px; background:var(--bg1);
+  padding:2px 6px; border-radius:4px; color:var(--tx1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL
+───────────────────────────────────────────────────────────── */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.42);
+  z-index:200; align-items:center; justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:var(--bg0);
+  border:0.5px solid var(--bd);
+  border-radius:var(--r-xl);
+  width:520px; max-width:95vw;
+  max-height:88vh; overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+  animation:fadeUp .2s ease;
+}
+.modal-head {
+  padding:16px 20px; border-bottom:0.5px solid var(--bd);
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--bg1); position:sticky; top:0;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+}
+.modal-head h3 { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.modal-close {
+  background:none; border:none; font-size:18px; cursor:pointer;
+  color:var(--tx2); width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:6px; transition:background .15s;
+}
+.modal-close:hover { background:var(--bg2); color:var(--tx0); }
+.modal-body { padding:20px; }
+.modal-foot {
+  padding:14px 20px; border-top:0.5px solid var(--bd);
+  display:flex; justify-content:flex-end; gap:10px;
+  background:var(--bg1);
+  border-radius:0 0 var(--r-xl) var(--r-xl);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────────────────────── */
+#toastArea {
+  position:fixed; bottom:24px; right:24px;
+  display:flex; flex-direction:column; gap:8px; z-index:9999;
+}
+.toast {
+  min-width:280px; max-width:380px;
+  padding:12px 16px; border-radius:var(--r-md);
+  font-size:13px; font-weight:500;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:var(--shadow-lg);
+  animation:slideIn .22s ease;
+}
+@keyframes slideIn { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+.t-success { background:var(--bg-success); color:var(--tx-success); border-left:4px solid var(--green); }
+.t-danger  { background:var(--bg-danger);  color:var(--tx-danger);  border-left:4px solid var(--red); }
+.t-warning { background:var(--bg-warning); color:var(--tx-warning); border-left:4px solid var(--amber); }
+.t-info    { background:var(--bg-info);    color:var(--tx-info);    border-left:4px solid var(--blue); }
+
+/* ─────────────────────────────────────────────────────────────
+   DIVIDER + MISC
+───────────────────────────────────────────────────────────── */
+.divider { height:0.5px; background:var(--bd); margin:14px 0; }
+.section-label {
+  font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.07em; color:var(--tx2); margin-bottom:10px;
+}
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media(max-width:700px){ .two-col{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN / ROLE SELECTION
+═══════════════════════════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-logo">
+    <h1>Med<span>Track</span></h1>
+    <p>Medical Supply Chain Management &nbsp;·&nbsp; Select your role to continue</p>
+  </div>
+
+  <div class="role-grid">
+
+    <div class="role-card gov" onclick="login('government')">
+      <div class="role-card-icon" style="background:#dbeafe;">🏛️</div>
+      <div>
+        <h3 style="color:#1e40af;">Government Admin</h3>
+        <p>Manage drug type registry, issue &amp; revoke licenses, register organisations, and view the full audit trail.</p>
+        <div class="tag-row">
+          <span class="tag" style="background:#dbeafe;color:#1e40af;">Drug Types</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af;">Licenses</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af;">Participants</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af;">Audit Trail</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-card mfr" onclick="login('manufacturer')">
+      <div class="role-card-icon" style="background:#EAF3DE;">🏭</div>
+      <div>
+        <h3 style="color:#3B6D11;">Manufacturer</h3>
+        <p>View your licensed drug types, create medicine units with auto-assigned UUIDs, and transfer batches to pharmacies.</p>
+        <div class="tag-row">
+          <span class="tag" style="background:#EAF3DE;color:#27500A;">My Licenses</span>
+          <span class="tag" style="background:#EAF3DE;color:#27500A;">Create Unit</span>
+          <span class="tag" style="background:#EAF3DE;color:#27500A;">Transfer</span>
+          <span class="tag" style="background:#EAF3DE;color:#27500A;">My Units</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-card ph" onclick="login('pharmacy')">
+      <div class="role-card-icon" style="background:#FAEEDA;">💊</div>
+      <div>
+        <h3 style="color:#854F0B;">Pharmacy</h3>
+        <p>Browse units in your inventory, look up any unit by UUID, and dispense medicine to citizens by patient ID.</p>
+        <div class="tag-row">
+          <span class="tag" style="background:#FAEEDA;color:#633806;">Received Units</span>
+          <span class="tag" style="background:#FAEEDA;color:#633806;">Transfer to Citizen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-card pub" onclick="login('public')">
+      <div class="role-card-icon" style="background:#f0efea;">🔍</div>
+      <div>
+        <h3 style="color:#444;">Public Verification</h3>
+        <p>Verify the authenticity of any medicine unit using its unique UUID printed on the packaging — no login required.</p>
+        <div class="tag-row">
+          <span class="tag" style="background:#f0efea;color:#555;">UUID Lookup</span>
+          <span class="tag" style="background:#f0efea;color:#555;">Chain of Custody</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════════ -->
+<div id="appShell" style="display:none;height:100vh;flex-direction:column;overflow:hidden;">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">Med<span>Track</span></div>
+
+    <nav class="topbar-nav" id="topbarNav"></nav>
+
+    <div class="topbar-right">
+      <!-- User chip with role badge -->
+      <div class="user-chip" id="userChip" title="Click to log out" onclick="logout()">
+        <div class="uc-avatar" id="ucAvatar"></div>
+        <div class="uc-info">
+          <div class="uc-name"  id="ucName"></div>
+          <div class="uc-role" id="ucRole"></div>
+        </div>
+        <span class="uc-caret">▼</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="app-body">
+    <div class="content" id="contentArea">
+
+      <!-- ══════════════════════════════════════
+           GOVERNMENT VIEWS
+      ══════════════════════════════════════ -->
+
+      <!-- GOV: Dashboard -->
+      <div id="v-gov-home" class="view">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Regulatory overview — Medical Supply Web</div>
+
+        <div class="kpi-row">
+          <div class="kpi k-blue">
+            <div class="kpi-icon">💊</div>
+            <div class="kpi-label">Drug Types</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-sub">2 added this month</div>
+          </div>
+          <div class="kpi k-green">
+            <div class="kpi-icon">📜</div>
+            <div class="kpi-label">Licenses</div>
+            <div class="kpi-value">8 <span style="font-size:14px;font-weight:500;">valid</span></div>
+            <div class="kpi-sub">1 revoked, 2 expiring</div>
+          </div>
+          <div class="kpi k-amber">
+            <div class="kpi-icon">🔢</div>
+            <div class="kpi-label">Units (total)</div>
+            <div class="kpi-value">1,240</div>
+            <div class="kpi-sub">Across all owners</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Recent Actions -->
+          <div class="card">
+            <div class="card-head"><h2>🕒 Recent Actions</h2></div>
+            <div class="card-body">
+              <div class="tl">
+                <div class="tl-item">
+                  <div class="tl-dot-col"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div>
+                  <div class="tl-body"><div class="tl-title">License issued to PharmaCorp (Drug X)</div><div class="tl-time">02 Oct 2026</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot-col"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-line"></div></div>
+                  <div class="tl-body"><div class="tl-title">DrugType "Drug Y" created</div><div class="tl-time">01 Oct 2026</div></div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot-col"><div class="tl-dot" style="background:var(--red)"></div></div>
+                  <div class="tl-body"><div class="tl-title">License L-004 revoked — HealthMed Co</div><div class="tl-time">28 Sep 2026</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="card-head"><h2>⚡ Quick Actions</h2></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn btn-primary" style="justify-content:center;" onclick="goView('gov','drug-types')">＋ Register Drug Type</button>
+              <button class="btn btn-success" style="justify-content:center;" onclick="openModal('issueLicenseModal')">＋ Issue License</button>
+              <button class="btn" style="justify-content:center;" onclick="goView('gov','units')">🔢 View All Units</button>
+              <button class="btn" style="justify-content:center;" onclick="goView('gov','participants')">👤 Register Organisation</button>
+              <button class="btn" style="justify-content:center;" onclick="goView('gov','audit')">📋 View Audit Trail</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert a-warning"><span class="alert-icon">⚠️</span><div><strong>Attention:</strong> License LIC-2025-089 (Metformin 500mg) expires in 18 days. <a href="#" onclick="goView('gov','licenses');return false;" style="font-weight:700;color:var(--amber);">View Licenses →</a></div></div>
+      </div>
+
+      <!-- GOV: Drug Types -->
+      <div id="v-gov-drug-types" class="view">
+        <div class="page-title">Drug Types</div>
+        <div class="page-sub">Approved drug type registry — create and maintain drug classifications</div>
+
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search drug types…"></div>
+          <select class="filter-select">
+            <option>All Categories</option>
+            <option>Analgesic</option><option>Antibiotic</option>
+            <option>Antidiabetic</option><option>Cardiovascular</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn btn-primary" onclick="openModal('createDrugTypeModal')">＋ Register Drug Type</button>
+        </div>
+
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th><th>Name</th><th>Category</th>
+                <th>Description</th><th>Created</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>DT-001</code></td>
+                <td><strong>Paracetamol 500mg</strong></td>
+                <td><span class="pill p-info">Analgesic</span></td>
+                <td>Pain relief and fever reduction</td>
+                <td>15 Jan 2026</td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="openModal('createDrugTypeModal')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing DT-001','info')">👁 View</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>DT-002</code></td>
+                <td><strong>Amoxicillin 250mg</strong></td>
+                <td><span class="pill p-info">Antibiotic</span></td>
+                <td>Antibiotic for bacterial infections</td>
+                <td>20 Jan 2026</td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="openModal('createDrugTypeModal')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing DT-002','info')">👁 View</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>DT-003</code></td>
+                <td><strong>Insulin Glargine 100 IU/ml</strong></td>
+                <td><span class="pill p-active">Antidiabetic</span></td>
+                <td>Long-acting insulin for diabetes management</td>
+                <td>01 Feb 2026</td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="openModal('createDrugTypeModal')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing DT-003','info')">👁 View</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GOV: Licenses -->
+      <div id="v-gov-licenses" class="view">
+        <div class="page-title">Licenses</div>
+        <div class="page-sub">Issue, prolong, and revoke manufacturing licenses</div>
+
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search by license ID or manufacturer…"></div>
+          <select class="filter-select">
+            <option>All Statuses</option>
+            <option>Valid</option><option>Expiring Soon</option><option>Revoked</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn btn-primary" onclick="openModal('issueLicenseModal')">＋ Issue License</button>
+        </div>
+
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>License ID</th><th>Manufacturer</th><th>Drug Type</th>
+                <th>Issue Date</th><th>Expires</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>LIC-2026-001</code></td>
+                <td>PharmaCorp Ltd</td><td>Paracetamol 500mg</td>
+                <td>20 Jan 2026</td><td>20 Jan 2027</td>
+                <td><span class="pill p-valid">✓ Valid</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-success" onclick="toast('License prolonged to Jan 2028','success')">⟳ Prolong</button>
+                  <button class="btn btn-sm btn-danger" onclick="toast('License LIC-2026-001 revoked','warning')">✕ Revoke</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>LIC-2026-002</code></td>
+                <td>MediSource Inc</td><td>Amoxicillin 250mg</td>
+                <td>01 Feb 2026</td><td>01 Feb 2027</td>
+                <td><span class="pill p-valid">✓ Valid</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-success" onclick="toast('License prolonged to Feb 2028','success')">⟳ Prolong</button>
+                  <button class="btn btn-sm btn-danger" onclick="toast('License LIC-2026-002 revoked','warning')">✕ Revoke</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>LIC-2025-089</code></td>
+                <td>PharmaCorp Ltd</td><td>Metformin 500mg</td>
+                <td>10 Sep 2025</td><td>10 Sep 2026</td>
+                <td><span class="pill p-expiring">⚠ Expiring</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-success" onclick="toast('License prolonged','success')">⟳ Prolong</button>
+                  <button class="btn btn-sm btn-danger" onclick="toast('License revoked','warning')">✕ Revoke</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>LIC-2025-045</code></td>
+                <td>HealthMed Co</td><td>Insulin Glargine</td>
+                <td>15 Jun 2025</td><td>15 Jun 2026</td>
+                <td><span class="pill p-revoked">✕ Revoked</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm" disabled>⟳ Prolong</button>
+                  <button class="btn btn-sm" onclick="toast('Viewing history for LIC-2025-045','info')">📋 History</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GOV: Medicine Units -->
+      <div id="v-gov-units" class="view">
+        <div class="page-title">Medicine Units</div>
+        <div class="page-sub">All registered medicine units across the supply chain — read-only oversight</div>
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search by UUID or drug type…"></div>
+          <select class="filter-select">
+            <option>All Statuses</option><option>Active</option><option>Dispensed</option><option>Expired</option><option>Recalled</option>
+          </select>
+          <select class="filter-select">
+            <option>All Manufacturers</option><option>PharmaCorp Ltd</option><option>MediSource Inc</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn" onclick="toast('Exporting units CSV…','info')">⬇ Export</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>Unit UUID</th><th>Drug Type</th><th>Manufacturer</th><th>License</th><th>Current Owner</th><th>Expiration</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>550e8400…</code></td><td>Drug A — Paracetamol 500mg</td><td>PharmaCorp Ltd</td><td><code>LIC-2026-001</code></td>
+                <td>City Health Pharmacy</td><td>01 Aug 2026</td>
+                <td><span class="pill p-active">Active</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button></td>
+              </tr>
+              <tr>
+                <td><code>a7f34b2c…</code></td><td>Drug A — Paracetamol 500mg</td><td>PharmaCorp Ltd</td><td><code>LIC-2026-001</code></td>
+                <td>City Health Pharmacy</td><td>30 Jun 2027</td>
+                <td><span class="pill p-active">Active</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button></td>
+              </tr>
+              <tr>
+                <td><code>b2d87e4f…</code></td><td>Drug B — Amoxicillin 250mg</td><td>MediSource Inc</td><td><code>LIC-2026-002</code></td>
+                <td>John Doe (Citizen)</td><td>15 Dec 2026</td>
+                <td><span class="pill p-dispensed">Dispensed</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GOV: Participants -->
+      <div id="v-gov-participants" class="view">
+        <div class="page-title">Participants</div>
+        <div class="page-sub">Registered manufacturers and pharmacies in the supply chain</div>
+
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search participants…"></div>
+          <select class="filter-select">
+            <option>All Types</option><option>Manufacturer</option><option>Pharmacy</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn btn-primary" onclick="openModal('registerParticipantModal')">＋ Register Org</button>
+        </div>
+
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Type</th><th>License No.</th><th>Registered</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>MFR-001</code></td>
+                <td><strong>PharmaCorp Ltd</strong></td>
+                <td><span class="pill p-info">🏭 Manufacturer</span></td>
+                <td>MFG-2025-1234</td><td>15 Mar 2025</td>
+                <td><span class="pill p-active">Active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="toast('Editing MFR-001','info')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing MFR-001','info')">👁 View</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>MFR-002</code></td>
+                <td><strong>MediSource Inc</strong></td>
+                <td><span class="pill p-info">🏭 Manufacturer</span></td>
+                <td>MFG-2025-5610</td><td>20 May 2025</td>
+                <td><span class="pill p-active">Active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="toast('Editing MFR-002','info')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing MFR-002','info')">👁 View</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>PH-012</code></td>
+                <td><strong>City Health Pharmacy</strong></td>
+                <td><span class="pill p-pending">💊 Pharmacy</span></td>
+                <td>PHM-2024-5678</td><td>20 Nov 2024</td>
+                <td><span class="pill p-active">Active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm" onclick="toast('Editing PH-012','info')">✏️ Edit</button>
+                  <button class="btn btn-sm btn-primary" onclick="toast('Viewing PH-012','info')">👁 View</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GOV: Audit -->
+      <div id="v-gov-audit" class="view">
+        <div class="page-title">Audit Trail</div>
+        <div class="page-sub">Immutable log of all system events — read-only</div>
+
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search audit log…"></div>
+          <select class="filter-select">
+            <option>All Events</option><option>License Events</option>
+            <option>Unit Created</option><option>Transfer</option><option>Dispense</option>
+          </select>
+          <input type="date" class="filter-select" value="2026-10-01">
+          <input type="date" class="filter-select" value="2026-10-31">
+          <div class="toolbar-spacer"></div>
+          <button class="btn" onclick="exportAuditCSV()">⬇ Export CSV</button>
+        </div>
+
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>Timestamp</th><th>Event</th><th>Actor</th><th>Entity</th><th>Details</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>02 Oct 2026 09:12</td><td><span class="pill p-active">License Issued</span></td><td>Gov. Admin</td><td><code>LIC-2026-001</code></td><td>PharmaCorp Ltd → Paracetamol 500mg</td></tr>
+              <tr><td>01 Oct 2026 14:30</td><td><span class="pill p-info">Drug Type Created</span></td><td>Gov. Admin</td><td><code>DT-003</code></td><td>Insulin Glargine 100 IU/ml registered</td></tr>
+              <tr><td>28 Sep 2026 11:05</td><td><span class="pill p-revoked">License Revoked</span></td><td>Gov. Admin</td><td><code>LIC-2025-045</code></td><td>HealthMed Co — compliance failure</td></tr>
+              <tr><td>25 Sep 2026 08:44</td><td><span class="pill p-info">Unit Transferred</span></td><td>PharmaCorp Ltd</td><td><code>a7f3-4b2c</code></td><td>→ City Health Pharmacy</td></tr>
+              <tr><td>22 Sep 2026 15:20</td><td><span class="pill p-active">Unit Created</span></td><td>PharmaCorp Ltd</td><td><code>a7f3-4b2c</code></td><td>Paracetamol 500mg · Batch 2026-042</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- ══════════════════════════════════════
+           MANUFACTURER VIEWS
+      ══════════════════════════════════════ -->
+
+      <!-- MFR: Home -->
+      <div id="v-mfr-home" class="view">
+        <div class="page-title">Manufacturer Dashboard</div>
+        <div class="page-sub">PharmaCorp Ltd — Production &amp; transfer management</div>
+
+        <div class="kpi-row">
+          <div class="kpi k-blue">
+            <div class="kpi-icon">📜</div>
+            <div class="kpi-label">Active Licenses</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-sub">1 expiring soon</div>
+          </div>
+          <div class="kpi k-green">
+            <div class="kpi-icon">🔢</div>
+            <div class="kpi-label">Units Created</div>
+            <div class="kpi-value">1,247</div>
+            <div class="kpi-sub">↑ 142 this month</div>
+          </div>
+          <div class="kpi k-amber">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Transferred</div>
+            <div class="kpi-value">892</div>
+            <div class="kpi-sub">To 8 pharmacies</div>
+          </div>
+          <div class="kpi k-red">
+            <div class="kpi-icon">🏪</div>
+            <div class="kpi-label">In Inventory</div>
+            <div class="kpi-value">355</div>
+            <div class="kpi-sub">Ready to ship</div>
+          </div>
+        </div>
+
+        <div class="alert a-info"><span class="alert-icon">ℹ️</span><div>2 units are ready for transfer. <a href="#" onclick="goView('mfr','transfer');return false;" style="font-weight:700;color:var(--blue);">Go to Transfer →</a></div></div>
+
+        <!-- My Licenses inline preview -->
+        <div class="card">
+          <div class="card-head">
+            <h2>📜 My Licenses</h2>
+            <button class="btn btn-sm" onclick="goView('mfr','my-licenses')">View all →</button>
+          </div>
+          <table class="table">
+            <thead>
+              <tr><th>Drug Type</th><th>Status</th><th>Expires</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Drug A — Paracetamol 500mg</td>
+                <td><span class="pill p-valid">Valid</span></td>
+                <td>31 Dec 2026</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Drug B — Insulin Glargine</td>
+                <td><span class="pill p-valid">Valid</span></td>
+                <td>30 Jun 2026</td>
+                <td><span style="font-size:11px;color:var(--tx2);">Contact regulator to renew</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MFR: My Licenses -->
+      <div id="v-mfr-my-licenses" class="view">
+        <div class="page-title">My Licenses</div>
+        <div class="page-sub">Manufacturing licenses issued to PharmaCorp Ltd</div>
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>License ID</th><th>Drug Type</th><th>Issue Date</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>LIC-2026-001</code></td><td>Drug A — Paracetamol 500mg</td>
+                <td>20 Jan 2026</td><td>31 Dec 2026</td>
+                <td><span class="pill p-valid">Valid</span></td><td>—</td>
+              </tr>
+              <tr>
+                <td><code>LIC-2026-015</code></td><td>Drug B — Insulin Glargine 100 IU/ml</td>
+                <td>01 Mar 2026</td><td>30 Jun 2026</td>
+                <td><span class="pill p-valid">Valid</span></td>
+                <td><span style="font-size:11px;color:var(--tx2);">Contact regulator to renew</span></td>
+              </tr>
+              <tr>
+                <td><code>LIC-2025-089</code></td><td>Drug C — Metformin 500mg</td>
+                <td>10 Sep 2025</td><td>10 Sep 2026</td>
+                <td><span class="pill p-expiring">⚠ Expiring</span></td>
+                <td><span style="font-size:11px;color:var(--tx2);">Contact regulator to renew</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MFR: Create Unit -->
+      <div id="v-mfr-create-unit" class="view">
+        <div class="page-title">Create Medicine Unit</div>
+        <div class="page-sub">Produce new units against a valid manufacturing license</div>
+        <div style="max-width:580px;">
+          <div class="card">
+            <div class="card-head"><h2>🧪 Unit Details</h2></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Drug Type <span class="form-req">*</span></label>
+                <select class="form-select" id="mfrDrugType">
+                  <option value="">Select drug type…</option>
+                  <option value="DT-001" data-license="LIC-2026-001">Drug A — Paracetamol 500mg (LIC-2026-001 · Valid)</option>
+                  <option value="DT-002" data-license="LIC-2026-015">Drug B — Insulin Glargine 100 IU/ml (LIC-2026-015 · Valid)</option>
+                  <option value="DT-003" disabled>Drug C — Metformin 500mg (No valid license)</option>
+                </select>
+                <div class="form-hint">Only drug types with a valid, non-revoked license are selectable.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Expiration Date <span class="form-req">*</span></label>
+                <input type="date" class="form-input" id="mfrExpiry">
+              </div>
+              <div class="alert a-warning" style="margin-bottom:16px;"><span class="alert-icon">📋</span><div>A unique RFC 4122 UUID will be auto-generated per unit. All creation events are logged to the immutable audit trail.</div></div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="createUnit()">🧪 Create Medicine Unit</button>
+              <div id="createdUUIDBox" style="display:none;margin-top:16px;">
+                <div class="alert a-success"><span class="alert-icon">✅</span>
+                  <div><strong>Unit created successfully.</strong><br>UUID: <code id="createdUUID" style="font-size:12px;word-break:break-all;"></code><br><span style="font-size:11px;color:var(--tx-success);">Share this UUID with the receiving pharmacy. It can be verified on the public portal.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MFR: Transfer to Pharmacy -->
+      <div id="v-mfr-transfer" class="view">
+        <div class="page-title">Transfer to Pharmacy</div>
+        <div class="page-sub">Look up a unit by UUID and dispatch it to a licensed pharmacy</div>
+        <div style="max-width:580px;">
+          <div class="card">
+            <div class="card-head"><h2>📤 Transfer Unit</h2></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Unit UUID <span class="form-req">*</span></label>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" class="form-input" id="transferUUID" placeholder="e.g. c9e12f5a-6b8d-4000-a7k5-m1n2o3p4q5r6" style="flex:1;">
+                  <button class="btn btn-primary" onclick="lookupUnit()">Look up</button>
+                </div>
+                <div class="form-hint">Enter the UUID of the unit you want to transfer.</div>
+              </div>
+
+              <div id="transferUnitInfo" style="display:none;margin-bottom:14px;">
+                <div class="alert a-success"><span class="alert-icon">✅</span><div id="transferUnitText"></div></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">To Pharmacy <span class="form-req">*</span></label>
+                <select class="form-select" id="transferTargetPharmacy">
+                  <option value="">Select pharmacy…</option>
+                  <option>City Health Pharmacy</option>
+                  <option>MediCare Pharmacy</option>
+                  <option>WellnessRx Pharmacy</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Transfer Notes</label>
+                <textarea class="form-textarea" rows="2" placeholder="Optional notes…"></textarea>
+              </div>
+              <button class="btn btn-success" style="width:100%;justify-content:center;" onclick="submitTransfer()">📤 Transfer Unit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MFR: My Units -->
+      <div id="v-mfr-my-units" class="view">
+        <div class="page-title">My Units</div>
+        <div class="page-sub">All medicine units created by PharmaCorp Ltd</div>
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search UUID or drug…"></div>
+          <select class="filter-select">
+            <option>All Statuses</option><option>In Stock</option><option>Transferred</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn btn-primary" onclick="goView('mfr','create-unit')">＋ Create New Unit</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>Unit UUID (short)</th><th>Drug Type</th><th>Created</th><th>Expiration</th><th>Current Owner</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>a7f34b2c…</code></td><td>Drug A — Paracetamol 500mg</td>
+                <td>15 Apr 2026</td><td>30 Jun 2027</td>
+                <td>City Health Pharmacy</td>
+                <td><span class="pill p-transferred">Transferred</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button></td>
+              </tr>
+              <tr>
+                <td><code>c9e12f5a…</code></td><td>Drug B — Insulin Glargine</td>
+                <td>20 Apr 2026</td><td>20 Mar 2027</td>
+                <td>PharmaCorp Ltd</td>
+                <td><span class="pill p-stock">In Stock</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="goView('mfr','transfer')">📤 Transfer</button></td>
+              </tr>
+              <tr>
+                <td><code>d4f28a1b…</code></td><td>Drug A — Paracetamol 500mg</td>
+                <td>22 Apr 2026</td><td>15 Jul 2027</td>
+                <td>PharmaCorp Ltd</td>
+                <td><span class="pill p-stock">In Stock</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="goView('mfr','transfer')">📤 Transfer</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- ══════════════════════════════════════
+           PHARMACY VIEWS
+      ══════════════════════════════════════ -->
+
+      <!-- PH: Home -->
+      <div id="v-ph-home" class="view">
+        <div class="page-title">Pharmacy Dashboard</div>
+        <div class="page-sub">City Health Pharmacy — Inventory &amp; dispensing</div>
+        <div class="kpi-row">
+          <div class="kpi k-blue">
+            <div class="kpi-icon">📥</div><div class="kpi-label">Units Received</div>
+            <div class="kpi-value">428</div><div class="kpi-sub">From 5 manufacturers</div>
+          </div>
+          <div class="kpi k-green">
+            <div class="kpi-icon">✅</div><div class="kpi-label">Dispensed to Citizens</div>
+            <div class="kpi-value">392</div><div class="kpi-sub">All documented</div>
+          </div>
+          <div class="kpi k-amber">
+            <div class="kpi-icon">📦</div><div class="kpi-label">Current Inventory</div>
+            <div class="kpi-value">36</div><div class="kpi-sub">3 drug types</div>
+          </div>
+          <div class="kpi k-red">
+            <div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring ≤ 30 days</div>
+            <div class="kpi-value">2</div><div class="kpi-sub">Review needed</div>
+          </div>
+        </div>
+        <div class="alert a-info"><span class="alert-icon">ℹ️</span><div>You have 36 units available. <a href="#" onclick="goView('ph','received-units');return false;" style="font-weight:700;color:var(--blue);">View inventory →</a></div></div>
+      </div>
+
+      <!-- PH: Received Units -->
+      <div id="v-ph-received-units" class="view">
+        <div class="page-title">Received Units</div>
+        <div class="page-sub">Units currently owned by City Health Pharmacy</div>
+        <div class="toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search UUID or drug type…"></div>
+          <select class="filter-select">
+            <option>All</option><option>Available</option><option>Dispensed</option>
+          </select>
+          <div class="toolbar-spacer"></div>
+          <button class="btn" onclick="toast('Exporting inventory CSV…','info')">⬇ Export</button>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead>
+              <tr><th>Unit UUID (short)</th><th>Drug Type</th><th>Expiration</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>550e8400…</code></td><td>Drug A — Paracetamol 500mg</td>
+                <td>01 Aug 2026</td>
+                <td><span class="pill p-active">active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button>
+                  <button class="btn btn-sm btn-success" onclick="goView('ph','transfer-citizen')">Transfer</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>a7f34b2c…</code></td><td>Drug A — Paracetamol 500mg</td>
+                <td>30 Jun 2027</td>
+                <td><span class="pill p-active">active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button>
+                  <button class="btn btn-sm btn-success" onclick="goView('ph','transfer-citizen')">Transfer</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>e5h38a1b…</code></td><td>Drug B — Amoxicillin 250mg</td>
+                <td>30 Nov 2026</td>
+                <td><span class="pill p-active">active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button>
+                  <button class="btn btn-sm btn-success" onclick="goView('ph','transfer-citizen')">Transfer</button>
+                </td>
+              </tr>
+              <tr>
+                <td><code>f8j64c2d…</code></td><td>Drug C — Insulin Glargine</td>
+                <td>28 Feb 2027</td>
+                <td><span class="pill p-active">active</span></td>
+                <td class="actions">
+                  <button class="btn btn-sm btn-primary" onclick="openModal('transferHistoryModal')">📋 History</button>
+                  <button class="btn btn-sm btn-success" onclick="goView('ph','transfer-citizen')">Transfer</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PH: Transfer to Citizen -->
+      <div id="v-ph-transfer-citizen" class="view">
+        <div class="page-title">Transfer to Citizen</div>
+        <div class="page-sub">Look up a unit and dispense it to a patient by citizen ID</div>
+        <div style="max-width:580px;">
+          <div class="card">
+            <div class="card-head"><h2>💊 Dispense Form</h2></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Unit UUID <span class="form-req">*</span></label>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" class="form-input" id="phUUID" placeholder="e.g. 550e8400-e29b-41d4-a716…" style="flex:1;">
+                  <button class="btn btn-primary" onclick="phLookupUnit()">Look up</button>
+                </div>
+              </div>
+
+              <div id="phUnitInfo" style="display:none;margin-bottom:14px;">
+                <div class="alert a-success"><span class="alert-icon">✅</span><div id="phUnitInfoText"></div></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Citizen ID <span class="form-req">*</span></label>
+                <input type="text" class="form-input" id="phCitizenId" placeholder="National ID / Patient ID">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Patient Name</label>
+                <input type="text" class="form-input" id="phPatientName" placeholder="Full name">
+              </div>
+              <div class="alert a-info" style="margin-bottom:16px;"><span class="alert-icon">ℹ️</span><div>Patient receives the UUID for self-verification. This transfer is permanently recorded.</div></div>
+              <button class="btn btn-success" id="phDispenseBtn" data-uuid="" style="width:100%;justify-content:center;" onclick="dispenseToCtizen()">✅ Dispense to Citizen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ══════════════════════════════════════
+           PUBLIC VERIFICATION
+      ══════════════════════════════════════ -->
+
+      <div id="v-pub-verify" class="view">
+        <div class="verify-hero">
+          <h2>🔍 Verify a Medicine Unit</h2>
+          <p>Enter the unique code (UUID) printed on your medicine packaging to confirm its authenticity and view the complete chain of custody.</p>
+          <div class="verify-input-row">
+            <input type="text" id="verificationUUID" placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000" onkeydown="if(event.key==='Enter')verifyMed()">
+            <button class="btn btn-primary" style="padding:11px 22px;font-size:14px;" onclick="verifyMed()">Verify</button>
+          </div>
+          <div class="verify-hint">Try: <strong>550e8400-e29b-41d4-a716-446655440000</strong> (active at pharmacy) &nbsp;·&nbsp; <strong>b2d87e4f-1c3a-4000-9abc-123456789012</strong> (dispensed to citizen)</div>
+        </div>
+
+        <div id="verificationResult" class="verify-result" style="display:none;"></div>
+
+        <div style="max-width:640px;margin:0 auto;">
+          <div class="card">
+            <div class="card-head"><h2>📖 How to verify</h2></div>
+            <div class="card-body">
+              <ol style="margin-left:18px;line-height:2.1;font-size:13px;color:var(--tx1);">
+                <li>Locate the UUID on your medicine packaging or pharmacy receipt</li>
+                <li>Enter the full UUID in the search box above</li>
+                <li>Click <strong>Verify</strong> to see authenticity information</li>
+                <li>Confirm the manufacturer and current owner match expectations</li>
+                <li>If verification fails or ownership looks wrong, contact your pharmacy or regulatory authority immediately</li>
+              </ol>
+              <div class="divider"></div>
+              <div class="alert a-warning" style="margin:0;"><span class="alert-icon">⚠️</span><div><strong>Warning:</strong> If this UUID is not found or shows unexpected ownership, the medicine may be counterfeit. Contact authorities immediately.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /app-body -->
+</div><!-- /appShell -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Create Drug Type -->
+<div id="createDrugTypeModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h3>💊 Register Drug Type</h3><button class="modal-close" onclick="closeModal('createDrugTypeModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Drug Code <span class="form-req">*</span></label><input type="text" class="form-input" placeholder="e.g. DT-004"></div>
+        <div class="form-group"><label class="form-label">Category</label><select class="form-select"><option>Analgesic</option><option>Antibiotic</option><option>Antidiabetic</option><option>Cardiovascular</option><option>Other</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Drug Name <span class="form-req">*</span></label><input type="text" class="form-input" placeholder="e.g. Metformin 850mg"></div>
+      <div class="form-group"><label class="form-label">Description <span class="form-req">*</span></label><textarea class="form-textarea" rows="3" placeholder="Primary use, dosage information, contraindications…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('createDrugTypeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('createDrugTypeModal');toast('Drug type registered successfully','success')">Register Drug Type</button>
+    </div>
+  </div>
+</div>
+
+<!-- Issue License -->
+<div id="issueLicenseModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h3>📜 Issue Manufacturing License</h3><button class="modal-close" onclick="closeModal('issueLicenseModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Manufacturer <span class="form-req">*</span></label><select class="form-select"><option value="">Select manufacturer…</option><option>PharmaCorp Ltd</option><option>MediSource Inc</option><option>HealthMed Co</option></select></div>
+      <div class="form-group"><label class="form-label">Drug Type <span class="form-req">*</span></label><select class="form-select"><option value="">Select drug type…</option><option>Drug A — Paracetamol 500mg</option><option>Drug B — Amoxicillin 250mg</option><option>Drug C — Insulin Glargine 100 IU/ml</option><option>Drug D — Metformin 850mg</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Issue Date <span class="form-req">*</span></label><input type="date" class="form-input" value="2026-05-06"></div>
+        <div class="form-group"><label class="form-label">Expiry Date <span class="form-req">*</span></label><input type="date" class="form-input"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('issueLicenseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('issueLicenseModal');toast('License issued. Manufacturer has been notified.','success')">Issue License</button>
+    </div>
+  </div>
+</div>
+
+<!-- Register Participant -->
+<div id="registerParticipantModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h3>👤 Register Organisation</h3><button class="modal-close" onclick="closeModal('registerParticipantModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Participant Type <span class="form-req">*</span></label><select class="form-select"><option value="">Select type…</option><option>Manufacturer</option><option>Pharmacy</option></select></div>
+        <div class="form-group"><label class="form-label">License Number <span class="form-req">*</span></label><input type="text" class="form-input" placeholder="Govt-issued #"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Organisation Name <span class="form-req">*</span></label><input type="text" class="form-input" placeholder="Enter legal name"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Contact Email <span class="form-req">*</span></label><input type="email" class="form-input" placeholder="contact@org.com"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" placeholder="+1 555 000 0000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Address</label><textarea class="form-textarea" rows="2" placeholder="Physical address"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('registerParticipantModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('registerParticipantModal');toast('Organisation registered successfully','success')">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer History -->
+<div id="transferHistoryModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head"><h3>📋 Transfer History</h3><button class="modal-close" onclick="closeModal('transferHistoryModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--bd);">
+        <div style="font-size:11px;color:var(--tx2);margin-bottom:4px;">UNIT UUID</div>
+        <code>a7f34b2c-9d1e-4f6a-b832-1c2d3e4f5a6b</code>&nbsp;<span class="pill p-active">Active</span>
+        <div style="margin-top:6px;font-size:12px;color:var(--tx1);">Paracetamol 500mg &nbsp;·&nbsp; Exp. 30 Jun 2027</div>
+      </div>
+      <div class="chain">
+        <div class="chain-item"><div class="chain-num">1</div><div class="chain-detail"><div class="chain-route">System → PharmaCorp Ltd <span class="pill p-active" style="margin-left:6px;">Created</span></div><div class="chain-date">15 Jan 2026 · 09:30</div></div></div>
+        <div class="chain-item"><div class="chain-num">2</div><div class="chain-detail"><div class="chain-route">PharmaCorp Ltd → City Health Pharmacy <span class="pill p-info" style="margin-left:6px;">Transferred</span></div><div class="chain-date">20 Feb 2026 · 14:22</div></div></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('transferHistoryModal')">Close</button></div>
+  </div>
+</div>
+
+<!-- Toast area -->
+<div id="toastArea"></div>
+
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────────────────────── */
+const MEDICINE_DB = {
+  '550e8400-e29b-41d4-a716-446655440000': {
+    drugType: 'Drug A — Paracetamol 500mg', manufacturer: 'PharmaCorp Ltd',
+    owner: 'City Health Pharmacy (Pharmacy)', status: 'Active', expiry: '2026-08-01',
+    licenseId: 'LIC-2026-001',
+    transfers: [
+      { from:'System', to:'PharmaCorp Ltd', action:'Created', date:'2026-01-15' },
+      { from:'PharmaCorp Ltd', to:'City Health Pharmacy', action:'Transferred', date:'2026-02-20' }
+    ]
+  },
+  'a7f34b2c-9d1e-4f6a-b832-1c2d3e4f5a6b': {
+    drugType: 'Drug A — Paracetamol 500mg', manufacturer: 'PharmaCorp Ltd',
+    owner: 'City Health Pharmacy', status: 'Active', expiry: '2027-06-30',
+    licenseId: 'LIC-2026-001',
+    transfers: [
+      { from:'System', to:'PharmaCorp Ltd', action:'Created', date:'2026-04-15' },
+      { from:'PharmaCorp Ltd', to:'City Health Pharmacy', action:'Transferred', date:'2026-04-18' }
+    ]
+  },
+  'b2d87e4f-1c3a-4000-9abc-123456789012': {
+    drugType: 'Drug B — Amoxicillin 250mg', manufacturer: 'MediSource Inc',
+    owner: 'John Doe (Citizen)', status: 'Dispensed', expiry: '2026-12-15',
+    licenseId: 'LIC-2026-002',
+    transfers: [
+      { from:'System', to:'MediSource Inc', action:'Created', date:'2026-04-10' },
+      { from:'MediSource Inc', to:'City Health Pharmacy', action:'Transferred', date:'2026-04-12' },
+      { from:'City Health Pharmacy', to:'John Doe (Citizen)', action:'Dispensed', date:'2026-04-22' }
+    ]
+  }
+};
+
+const MFR_UNITS = {
+  'c9e12f5a-6b8d-4000-a7k5-m1n2o3p4q5r6': { drugType:'Drug B — Insulin Glargine 100 IU/ml', status:'In Stock' },
+  'd4f28a1b-3c7e-4000-9k5m-a1b2c3d4e5f6': { drugType:'Drug A — Paracetamol 500mg', status:'In Stock' }
+};
+
+const PH_UNITS = {
+  '550e8400': { drugType:'Drug A — Paracetamol 500mg', status:'active', expiry:'2026-08-01' },
+  'a7f34b2c': { drugType:'Drug A — Paracetamol 500mg', status:'active', expiry:'2027-06-30' }
+};
+
+/* ─────────────────────────────────────────────────────────────
+   ROLE CONFIG
+───────────────────────────────────────────────────────────── */
+const ROLES = {
+  government: {
+    label:'Government Admin', org:'Regulatory Authority',
+    icon:'🏛️', initials:'GA',
+    avatarStyle:'background:#dbeafe;color:#1e40af;',
+    roleStyle:'color:#1e40af;',
+    nav:[
+      { id:'home',         label:'Home',         icon:'🏠', view:'gov-home' },
+      { id:'drug-types',   label:'Drug Types',   icon:'💊', view:'gov-drug-types' },
+      { id:'licenses',     label:'Licenses',     icon:'📜', view:'gov-licenses' },
+      { id:'units',        label:'Medicine Units',icon:'🔢', view:'gov-units' },
+      { id:'participants', label:'Participants',  icon:'👥', view:'gov-participants' },
+      { id:'audit',        label:'Audit',         icon:'📋', view:'gov-audit' }
+    ]
+  },
+  manufacturer: {
+    label:'Manufacturer', org:'PharmaCorp Ltd',
+    icon:'🏭', initials:'PC',
+    avatarStyle:'background:#EAF3DE;color:#3B6D11;',
+    roleStyle:'color:#3B6D11;',
+    nav:[
+      { id:'home',        label:'Home',            icon:'🏠', view:'mfr-home' },
+      { id:'my-licenses', label:'My Licenses',     icon:'📜', view:'mfr-my-licenses' },
+      { id:'create-unit', label:'Create Unit',     icon:'🧪', view:'mfr-create-unit' },
+      { id:'transfer',    label:'Transfer',         icon:'📤', view:'mfr-transfer' },
+      { id:'my-units',    label:'My Units',         icon:'🔢', view:'mfr-my-units' }
+    ]
+  },
+  pharmacy: {
+    label:'Pharmacy', org:'City Health Pharmacy',
+    icon:'💊', initials:'CH',
+    avatarStyle:'background:#FAEEDA;color:#854F0B;',
+    roleStyle:'color:#854F0B;',
+    nav:[
+      { id:'home',              label:'Home',               icon:'🏠', view:'ph-home' },
+      { id:'received-units',    label:'Received Units',     icon:'📦', view:'ph-received-units' },
+      { id:'transfer-citizen',  label:'Transfer to Citizen', icon:'💊', view:'ph-transfer-citizen' }
+    ]
+  },
+  public: {
+    label:'Public', org:'Citizen',
+    icon:'🔍', initials:'PU',
+    avatarStyle:'background:#f0efea;color:#555;',
+    roleStyle:'color:#555;',
+    nav:[
+      { id:'verify', label:'Verify Medicine', icon:'🔍', view:'pub-verify' }
+    ]
+  }
+};
+
+function exportAuditCSV() {
+  const rows = [['Timestamp','Event','Actor','Entity','Details']];
+  document.querySelectorAll('#v-gov-audit .table tbody tr').forEach(tr => {
+    const cells = Array.from(tr.querySelectorAll('td')).map(td => td.innerText.replace(/\n/g,' ').trim());
+    rows.push(cells);
+  });
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'audit-trail.csv';
+  a.click();
+  toast('Audit log exported as CSV','success');
+}
+
+let currentRole = null;
+
+/* ─────────────────────────────────────────────────────────────
+   LOGIN / LOGOUT
+───────────────────────────────────────────────────────────── */
+function login(role) {
+  currentRole = role;
+  const cfg = ROLES[role];
+
+  document.getElementById('loginPage').style.display = 'none';
+  const shell = document.getElementById('appShell');
+  shell.style.display = 'flex';
+
+  // Topbar nav
+  const nav = document.getElementById('topbarNav');
+  nav.innerHTML = '';
+  cfg.nav.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'tnav-item';
+    btn.id = 'tn-' + item.view;
+    btn.innerHTML = `<span class="tnav-icon">${item.icon}</span>${item.label}`;
+    btn.onclick = () => showView(item.view, btn, item.label);
+    nav.appendChild(btn);
+  });
+
+  // User chip
+  const av = document.getElementById('ucAvatar');
+  av.textContent = cfg.initials;
+  av.style.cssText = cfg.avatarStyle;
+  document.getElementById('ucName').textContent = cfg.org;
+  const roleEl = document.getElementById('ucRole');
+  roleEl.textContent = cfg.icon + ' ' + cfg.label;
+  roleEl.style.cssText = cfg.roleStyle;
+
+  // Go to first view
+  const first = cfg.nav[0];
+  showView(first.view, document.getElementById('tn-' + first.view), first.label);
+}
+
+function logout() {
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  currentRole = null;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const vr = document.getElementById('verificationResult');
+  if(vr){ vr.style.display='none'; vr.innerHTML=''; }
+  document.getElementById('verificationUUID') && (document.getElementById('verificationUUID').value='');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   VIEW NAVIGATION
+───────────────────────────────────────────────────────────── */
+function showView(viewId, navBtn, title) {
+  document.querySelectorAll('.tnav-item').forEach(b => b.classList.remove('active'));
+  if(navBtn) navBtn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('v-' + viewId);
+  if(target) target.classList.add('active');
+}
+
+function goView(rolePrefix, id) {
+  const cfg = ROLES[currentRole];
+  const item = cfg.nav.find(n => n.id === id);
+  if(!item) return;
+  const btn = document.getElementById('tn-' + item.view);
+  showView(item.view, btn, item.label);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODALS
+───────────────────────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.addEventListener('click', e => { if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────────────────────── */
+function toast(msg, type='success') {
+  const icons = { success:'✅', danger:'❌', warning:'⚠️', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast t-${type}`;
+  el.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toastArea').appendChild(el);
+  setTimeout(() => el.style.opacity='0', 3600);
+  setTimeout(() => el.remove(), 4000);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MANUFACTURER ACTIONS
+───────────────────────────────────────────────────────────── */
+function generateUUID() {
+  // RFC 4122 version 4 UUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function isValidUUID(uuid) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+}
+
+function createUnit() {
+  const dt = document.getElementById('mfrDrugType').value;
+  const expiry = document.getElementById('mfrExpiry').value;
+  if(!dt) { toast('Please select a drug type with a valid license', 'danger'); return; }
+  if(!expiry) { toast('Please select an expiration date', 'danger'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  if(expiry <= today) { toast('Expiration date must be in the future', 'danger'); return; }
+  const uuid = generateUUID();
+  // Add to MEDICINE_DB so it can be verified immediately
+  MEDICINE_DB[uuid] = {
+    drugType: document.getElementById('mfrDrugType').options[document.getElementById('mfrDrugType').selectedIndex].text.split(' (')[0],
+    manufacturer: 'PharmaCorp Ltd',
+    owner: 'PharmaCorp Ltd (Manufacturer)',
+    status: 'Active',
+    expiry: expiry,
+    licenseId: document.getElementById('mfrDrugType').options[document.getElementById('mfrDrugType').selectedIndex].getAttribute('data-license'),
+    transfers: [
+      { from: 'System', to: 'PharmaCorp Ltd', action: 'Created', date: today }
+    ]
+  };
+  MFR_UNITS[uuid] = { drugType: MEDICINE_DB[uuid].drugType, status: 'In Stock' };
+  toast(`Unit created · UUID: ${uuid}`, 'success');
+  // Show the generated UUID clearly
+  document.getElementById('createdUUIDBox').style.display = 'block';
+  document.getElementById('createdUUID').textContent = uuid;
+}
+
+function lookupUnit() {
+  const uuid = document.getElementById('transferUUID').value.trim();
+  const infoDiv = document.getElementById('transferUnitInfo');
+  const infoText = document.getElementById('transferUnitText');
+  if(!uuid) { toast('Please enter a unit UUID','danger'); return; }
+  const unit = MFR_UNITS[uuid];
+  if(unit) {
+    infoText.innerHTML = `<strong>${uuid}</strong> — ${unit.drugType} · Status: <strong>${unit.status}</strong>`;
+    infoDiv.style.display='block';
+  } else {
+    infoDiv.style.display='none';
+    toast('Unit not found or not owned by you','danger');
+  }
+}
+
+function submitTransfer() {
+  const ph = document.getElementById('transferTargetPharmacy').value;
+  if(!ph) { toast('Please select a destination pharmacy','danger'); return; }
+  toast(`Unit transferred to ${ph}. Audit trail updated.`,'success');
+  document.getElementById('transferUnitInfo').style.display='none';
+  document.getElementById('transferUUID').value='';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PHARMACY ACTIONS
+───────────────────────────────────────────────────────────── */
+function phLookupUnit() {
+  const uuid = document.getElementById('phUUID').value.trim();
+  const infoDiv = document.getElementById('phUnitInfo');
+  const infoText = document.getElementById('phUnitInfoText');
+  if(!uuid) { toast('Please enter a unit UUID','danger'); return; }
+  if(!isValidUUID(uuid)) { toast('Invalid UUID format — must match xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx','danger'); return; }
+  // match on first 8 chars (segment before first dash)
+  const prefix = uuid.split('-')[0];
+  const shortMatch = Object.entries(PH_UNITS).find(([k]) => k === prefix);
+  const fullMatch = MEDICINE_DB[uuid];
+  const unit = fullMatch || (shortMatch ? { drugType: shortMatch[1].drugType, status: shortMatch[1].status, expiry: shortMatch[1].expiry } : null);
+  if(unit) {
+    infoText.innerHTML = `Found: <strong>${unit.drugType}</strong> · Expiry: <strong>${unit.expiry||''}</strong> · Status: <strong>${unit.status}</strong>`;
+    infoDiv.style.display='block';
+    document.getElementById('phDispenseBtn').dataset.uuid = uuid;
+  } else {
+    infoDiv.style.display='none';
+    toast('Unit not found in your inventory','danger');
+  }
+}
+
+function dispenseToCtizen() {
+  const citizenId = document.getElementById('phCitizenId').value.trim();
+  const patientName = document.getElementById('phPatientName').value.trim();
+  const btn = document.getElementById('phDispenseBtn');
+  const uuid = btn.dataset.uuid;
+  if(!citizenId) { toast('Please enter a Citizen ID','danger'); return; }
+  if(!uuid) { toast('Please look up a unit first','danger'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  const displayName = patientName || citizenId;
+  if(MEDICINE_DB[uuid]) {
+    MEDICINE_DB[uuid].owner = `${displayName} (Citizen)`;
+    MEDICINE_DB[uuid].status = 'Dispensed';
+    MEDICINE_DB[uuid].transfers.push({ from:'City Health Pharmacy', to:displayName, action:'Dispensed', date:today });
+    // Remove from PH inventory
+    const prefix = uuid.split('-')[0];
+    delete PH_UNITS[prefix];
+  }
+  toast(`Medicine dispensed to ${displayName}. UUID provided to patient. Transfer recorded.`,'success');
+  document.getElementById('phUnitInfo').style.display='none';
+  document.getElementById('phUUID').value='';
+  document.getElementById('phCitizenId').value='';
+  document.getElementById('phPatientName').value='';
+  btn.dataset.uuid = '';
+}
+/* ─────────────────────────────────────────────────────────────
+   PUBLIC VERIFY
+───────────────────────────────────────────────────────────── */
+function verifyMed() {
+  const uuid = document.getElementById('verificationUUID').value.trim();
+  const resultDiv = document.getElementById('verificationResult');
+  if(!uuid){ toast('Please enter a UUID','danger'); return; }
+
+  if(!isValidUUID(uuid)) {
+    resultDiv.innerHTML = `
+      <div class="card" style="max-width:640px;margin:0 auto 20px;">
+        <div class="card-body">
+          <div class="alert a-danger" style="margin:0;"><span class="alert-icon">❌</span>
+            <div><strong>Invalid UUID format.</strong> Please enter a valid UUID in the format <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>. Check the code printed on your packaging and try again.</div>
+          </div>
+          <div style="text-align:center;margin-top:16px;">
+            <button class="btn btn-primary" onclick="document.getElementById('verificationUUID').value='';document.getElementById('verificationResult').style.display='none';">Try again</button>
+          </div>
+        </div>
+      </div>`;
+    resultDiv.style.display='block';
+    return;
+  }
+
+  const med = MEDICINE_DB[uuid];
+  if(!med) {
+    resultDiv.innerHTML = `
+      <div class="card" style="max-width:640px;margin:0 auto 20px;">
+        <div class="card-body">
+          <div class="alert a-danger" style="margin:0;"><span class="alert-icon">❌</span>
+            <div><strong>No unit found for this code.</strong> Check the code and try again. If you believe this is a valid medicine, contact your pharmacy or regulatory authority immediately.</div>
+          </div>
+          <div style="text-align:center;margin-top:16px;">
+            <button class="btn btn-primary" onclick="document.getElementById('verificationUUID').value='';document.getElementById('verificationResult').style.display='none';">Try again</button>
+          </div>
+        </div>
+      </div>`;
+    resultDiv.style.display='block';
+    return;
+  }
+
+  const statusMap = { Active:'p-active', Dispensed:'p-dispensed', 'In Stock':'p-stock' };
+  const chainHTML = med.transfers.map((t,i) => `
+    <div class="chain-item">
+      <div class="chain-num">${i+1}</div>
+      <div class="chain-detail">
+        <div class="chain-route">${t.from} → ${t.to}
+          <span class="pill ${t.action==='Created'?'p-active':t.action==='Dispensed'?'p-dispensed':'p-info'}" style="margin-left:8px;">${t.action}</span>
+        </div>
+        <div class="chain-date">${t.date}</div>
+      </div>
+    </div>`).join('');
+
+  resultDiv.innerHTML = `
+    <div class="card" style="max-width:640px;margin:0 auto 20px;">
+      <div class="card-head"><h2>✅ Verification Result</h2></div>
+      <div class="card-body">
+        <div class="alert a-success" style="margin-bottom:16px;"><span class="alert-icon">✅</span><div><strong>Verified!</strong> This medicine unit is authentic and traceable.</div></div>
+        <div class="info-row"><div class="info-label">Unit ID</div><div class="info-value"><code>${uuid}</code></div></div>
+        <div class="info-row"><div class="info-label">Drug type</div><div class="info-value">${med.drugType}</div></div>
+        <div class="info-row"><div class="info-label">Status</div><div class="info-value"><span class="pill ${statusMap[med.status]||'p-info'}">${med.status}</span></div></div>
+        <div class="info-row"><div class="info-label">Current owner</div><div class="info-value">${med.owner}</div></div>
+        <div class="info-row"><div class="info-label">Expiration</div><div class="info-value">${med.expiry}</div></div>
+        <div class="divider"></div>
+        <div style="font-weight:700;font-size:13px;margin-bottom:12px;">Transfer history</div>
+        <div class="chain">${chainHTML}</div>
+        <div style="text-align:center;margin-top:20px;">
+          <button class="btn" onclick="document.getElementById('verificationUUID').value='';document.getElementById('verificationResult').style.display='none';">🔍 Verify another</button>
+        </div>
+      </div>
+    </div>`;
+  resultDiv.style.display = 'block';
+}
+</script>
+</body>
+</html>
